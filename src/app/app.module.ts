@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { AppComponent } from './app.component';
 import { TaskComponent } from './task/task.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
+import { DragDropModule } from '@angular/cdk/drag-drop';
 const MATERIAL_IMPORT = [
   MatToolbarModule,
   MatIconModule,
@@ -21,6 +21,7 @@ const MATERIAL_IMPORT = [
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    DragDropModule,
     ...MATERIAL_IMPORT
   ],
   providers: [],
