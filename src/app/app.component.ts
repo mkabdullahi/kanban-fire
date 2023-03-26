@@ -7,6 +7,8 @@ import {
         moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { TaskDialogComponent } from './task-dialog/task-dialog.component';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -14,24 +16,15 @@ import { TaskDialogComponent } from './task-dialog/task-dialog.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
- todos: Task[] = [
-    {
-      title: 'Buy Milk',
-      description: 'Go to the store and buy milk'
-    },
-    {
-      title: 'Create a Kanban app',
-      description: 'Using Firebase and Angular framework'
-    },
-    {
-      title: 'Add authentication',
-      description: 'Use firebase auth'
-    }
-  ];
-  inProgress: Task[] = [];
-  done: Task[] = [];
 
-  constructor(private matDialog: MatDialog){}
+  constructor(
+            private matDialog: MatDialog,
+            private store: AngularFirestore
+            ){}
+
+  todos = this.store.collection('todos').valueChanges({idField: 'id' }) as Observable<Task[]>;
+  inProgress = this.store.collection('inProgress').valueChanges({idField: 'id'}) as Observable<Task[]>;
+  done = this.store.collection('done').valueChanges({idField: 'id'}) as Observable<Task[]>;
 
   newTask(): void {
       const dialogRef = this.matDialog.open(TaskDialogComponent, {
@@ -45,7 +38,7 @@ export class AppComponent {
           if(!result) {
             return;
           }
-          this.todos.push(result.task);
+          this.store.collection('todos').add(result.task);
         })
   }
 
@@ -61,36 +54,36 @@ export class AppComponent {
       if(!result){
         return;
       }
-      const dataList = this[list];
-      const taskIndex = dataList.indexOf(task);
-
       if(result.delete) {
-        dataList.splice(taskIndex, 1);
+       this.store.collection(list).doc(task.id).delete();
       }else{
-        dataList[taskIndex] = task;
+        this.store.collection(list).doc(task.id).update(task);
       }
     })
   }
 
-  drop(event: CdkDragDrop<Task[]>): void {
+  drop(event: CdkDragDrop<Task[] | null>): void {
 
     if(event.previousContainer === event.container) {
       return;
     }
-    if(!event.container.data || !event.previousContainer.data){
+    if(!event.previousContainer.data || !event.container.data){
       return;
     }
+   const item = event.previousContainer.data[event.previousIndex];
+   this.store.firestore.runTransaction( ()=> {
+    const taskPromise = Promise.all([
+      this.store.collection(event.previousContainer.id).doc(item.id).delete(),
+      this.store.collection(event.container.id).add(item),
+    ]);
+    return taskPromise;
+   })
     transferArrayItem(
       event.previousContainer.data,
       event.container.data,
       event.previousIndex,
       event.currentIndex
     );
-    moveItemInArray(
-      this.todos,
-      event.previousIndex,
-      event.currentIndex
-    )
   }
 
 }

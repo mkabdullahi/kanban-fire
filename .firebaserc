@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "kanban-mk-fire": {
+      "hosting": {
+        "kanban-fire": [
+          "kanban-mk-fire"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "kanban-mk-fire"
+  }
+}
