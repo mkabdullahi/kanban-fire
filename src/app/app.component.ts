@@ -5,7 +5,7 @@ import {
         CdkDragDrop,
         transferArrayItem,
         moveItemInArray } from '@angular/cdk/drag-drop';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { TaskDialogComponent } from './task-dialog/task-dialog.component';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Observable } from 'rxjs';
